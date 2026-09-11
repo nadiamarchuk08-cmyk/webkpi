@@ -7,14 +7,63 @@
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-    <!-- Шапка з назвою -->
+    <header>
+        <h1>Трекер витрат</h1>
+    </header>
 
-    <!-- Форма додавання витрати/доходу -->
+    <aside>
+        <h2>Підсумковий баланс</h2>
+        <p>Загальний баланс: 14350 грн</p>
+    </aside>
 
-    <!-- Список операцій -->
+    <main>
+        <section class="form">
+            <h2>Додати операцію</h2>
+            <form action="#">
+                <div>
+                    <label for="title">Опис операції:</label>
+                    <input type="text" id="title" name="title">
+                </div>
+                <div>
+                    <label for="amount">Сума (грн):</label>
+                    <input type="number" id="amount" name="amount">
+                </div>
+                <div>
+                    <label for="category">Категорія:</label>
+                    <select id="category" name="category">
+                        <option value="food">Їжа</option>
+                        <option value="transport">Транспорт</option>
+                        <option value="shopping">Покупки</option>
+                        <option value="income">Дохід</option>
+                        <option value="other">Інше</option>
+                    </select>
+                </div>
+                <button type="submit">Додати</button>
+            </form>
+        </section>
 
-    <!-- Блок підсумкового балансу -->
+        <section class="transactions">
+            <h2>Операції</h2>
+            <article>
+                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS4_aOUAH6xvbTNuyRy4iQYFffYoGl_inJ1vjAmJBiEHm8H3BSaDPgyJy0&s=10" alt="Їжа" style="width: 50px; height: auto;">
+                <h3>Кафе - 400 грн (Їжа)</h3>
+                <p>Дата: <time datetime="2026-09-10">10 вересня 2026</time></p>
+            </article>
+            <article>
+                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQs0Z7oY3VLMuPYhoTxGEs0k-H07pi9GheHqUSF7pyTvA&s=10" alt="Покупки" style="width: 50px; height: auto;">
+                <h3>Супермаркет - 250 грн (Покупки)</h3>
+                <p>Дата: <time datetime="2026-09-11">11 вересня 2026</time></p>
+            </article>
+            <article>
+                <img src="https://media.istockphoto.com/id/1330591104/vector/hand-with-dollar-coin-line-icon-charity-and-donation-concept-financial-help-for-needy.jpg?s=612x612&w=0&k=20&c=bKobphIX1-EF7L3Get9bEM7Ska2VZScuUMOxtQ2iPNw=" alt="Дохід" style="width: 50px; height: auto;">
+                <h3>Зарплата - 15000 грн (Дохід)</h3>
+                <p>Дата: <time datetime="2026-08-27">27 серпня 2026</time></p>
+            </article>
+        </section>
+    </main>
 
-    <!-- Підвал -->
+    <footer>
+        <p>&copy; 2026 Трекер витрат. Автор: Марчук Надія</p>
+    </footer>
 </body>
 </html>
