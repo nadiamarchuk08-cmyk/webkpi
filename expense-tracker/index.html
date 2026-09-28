@@ -11,59 +11,61 @@
         <h1>Трекер витрат</h1>
     </header>
 
-    <aside>
-        <h2>Підсумковий баланс</h2>
-        <p>Загальний баланс: 14350 грн</p>
-    </aside>
+    <div class="layout-container">
+        <main>
+            <section class="form">
+                <h2>Додати операцію</h2>
+                <form action="#" class="transaction-form">
+                    <div class="form-group">
+                        <label for="title">Опис операції:</label>
+                        <input type="text" id="title" name="title">
+                    </div>
+                    <div class="form-group">
+                        <label for="amount">Сума (грн):</label>
+                        <input type="number" id="amount" name="amount">
+                    </div>
+                    <div class="form-group">
+                        <label for="category">Категорія:</label>
+                        <select id="category" name="category">
+                            <option value="food">Їжа</option>
+                            <option value="transport">Транспорт</option>
+                            <option value="shopping">Покупки</option>
+                            <option value="income">Дохід</option>
+                            <option value="other">Інше</option>
+                        </select>
+                    </div>
+                    <button type="submit">Додати</button>
+                </form>
+            </section>
 
-    <main>
-        <section class="form">
-            <h2>Додати операцію</h2>
-            <form action="#">
-                <div>
-                    <label for="title">Опис операції:</label>
-                    <input type="text" id="title" name="title">
-                </div>
-                <div>
-                    <label for="amount">Сума (грн):</label>
-                    <input type="number" id="amount" name="amount">
-                </div>
-                <div>
-                    <label for="category">Категорія:</label>
-                    <select id="category" name="category">
-                        <option value="food">Їжа</option>
-                        <option value="transport">Транспорт</option>
-                        <option value="shopping">Покупки</option>
-                        <option value="income">Дохід</option>
-                        <option value="other">Інше</option>
-                    </select>
-                </div>
-                <button type="submit">Додати</button>
-            </form>
-        </section>
-
-        <section class="transactions">
-            <h2>Операції</h2>
-            <article class="card">
-                <img src="assets/food.png" alt="Категорія Їжа. Зображення столового приладдя" class="card_icon">
-                <h3>Кафе (Їжа)</h3>
-                <p class="amount amount--expense">-400 грн</p>
-                <p class="date">Дата: <time datetime="2026-09-10">10 вересня 2026</time></p>
-            </article>
-            <article class="card">
-                <img src="assets/shop.png" alt="Категорія Покупки. Зображення продуктової корзини" class="card_icon">
-                <h3>Супермаркет (Покупки)</h3>
-                <p class="amount amount--expense">-250 грн</p>
-                <p class="date">Дата: <time datetime="2026-09-11">11 вересня 2026</time></p>
-            </article>
-            <article class="card">
-                <img src="assets/income.jpg" alt="Категорія Дохід. Зображення руки з грошима" class="card_icon">
-                <h3>Зарплата (Дохід)</h3>
-                <p class="amount amount--income">+15000 грн</p>
-                <p class="date">Дата: <time datetime="2026-08-27">27 серпня 2026</time></p>
-            </article>
-        </section>
-    </main>
+            <section class="transactions">
+                <h2>Операції</h2>
+                <article class="card">
+                    <img src="assets/food.png" alt="Категорія Їжа. Зображення столового приладдя" class="card_icon">
+                    <h3>Кафе (Їжа)</h3>
+                    <p class="amount amount--expense">-400 грн</p>
+                    <p class="date">Дата: <time datetime="2026-09-10">10 вересня 2026</time></p>
+                </article>
+                <article class="card">
+                    <img src="assets/shop.png" alt="Категорія Покупки. Зображення продуктової корзини" class="card_icon">
+                    <h3>Супермаркет (Покупки)</h3>
+                    <p class="amount amount--expense">-250 грн</p>
+                    <p class="date">Дата: <time datetime="2026-09-11">11 вересня 2026</time></p>
+                </article>
+                <article class="card">
+                    <img src="assets/income.jpg" alt="Категорія Дохід. Зображення руки з грошима" class="card_icon">
+                    <h3>Зарплата (Дохід)</h3>
+                    <p class="amount amount--income">+15000 грн</p>
+                    <p class="date">Дата: <time datetime="2026-08-27">27 серпня 2026</time></p>
+                </article>
+            </section>
+        </main>
+        
+        <aside>
+            <h2>Підсумковий баланс</h2>
+            <p>Загальний баланс: 14350 грн</p>
+        </aside>
+    </div>
 
     <footer>
         <p>&copy; 2026 Трекер витрат. Автор: Марчук Надія</p>
