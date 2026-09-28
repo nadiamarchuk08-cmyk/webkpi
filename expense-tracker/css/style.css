@@ -5,16 +5,13 @@
 }
 
 body {
-    margin: 0;
-    padding: 0;
-}
-
-body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     font-size: 1rem;
     line-height: 1.5;
     background-color: #f4f6f8;
-    color: #333333;           
+    color: #333333;       
+    margin: 0;
+    padding: 0;    
 }
 
 header {
@@ -123,6 +120,14 @@ form button:hover {
     font-size: 0.85rem;
     color: #6c757d;
     width: 100%;
+}
+
+.card_icon {
+    width: 50px;
+    height: auto;
+    object-fit: contain;
+    margin-right: 12px;
+    flex-shrink: 0;
 }
 
 .amount {
