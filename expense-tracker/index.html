@@ -12,6 +12,11 @@
     </header>
 
     <div class="layout-container">
+        <aside>
+            <h2>Підсумковий баланс</h2>
+            <p>Загальний баланс: 14350 грн</p>
+            <span class="budget-status budget-status--good">Бюджет у нормі</span>
+        </aside>
         <main>
             <section class="form">
                 <h2>Додати операцію</h2>
@@ -40,31 +45,37 @@
 
             <section class="transactions">
                 <h2>Операції</h2>
-                <article class="card">
-                    <img src="assets/food.png" alt="Категорія Їжа. Зображення столового приладдя" class="card_icon">
-                    <h3>Кафе (Їжа)</h3>
-                    <p class="amount amount--expense">-400 грн</p>
-                    <p class="date">Дата: <time datetime="2026-09-10">10 вересня 2026</time></p>
-                </article>
-                <article class="card">
-                    <img src="assets/shop.png" alt="Категорія Покупки. Зображення продуктової корзини" class="card_icon">
-                    <h3>Супермаркет (Покупки)</h3>
-                    <p class="amount amount--expense">-250 грн</p>
-                    <p class="date">Дата: <time datetime="2026-09-11">11 вересня 2026</time></p>
-                </article>
-                <article class="card">
-                    <img src="assets/income.jpg" alt="Категорія Дохід. Зображення руки з грошима" class="card_icon">
-                    <h3>Зарплата (Дохід)</h3>
-                    <p class="amount amount--income">+15000 грн</p>
-                    <p class="date">Дата: <time datetime="2026-08-27">27 серпня 2026</time></p>
-                </article>
+                <div class="cards">
+                    <article class="card">
+                        <img src="assets/food.png" alt="Категорія Їжа. Зображення столового приладдя" class="card_icon">
+                        <div class="card-info">
+                            <h3>Кафе</h3>
+                            <span class="category-badge category-badge--food">Їжа</span>
+                            <p class="date">Дата: <time datetime="2026-09-10">10 вересня 2026</time></p>
+                        </div>
+                        <p class="amount amount--expense">-400 грн</p>
+                    </article>
+                    <article class="card">
+                        <img src="assets/shop.png" alt="Категорія Покупки. Зображення продуктової корзини" class="card_icon">
+                        <div class="card-info">
+                            <h3>Супермаркет</h3>
+                            <span class="category-badge category-badge--shop">Покупки</span>
+                            <p class="date">Дата: <time datetime="2026-09-11">11 вересня 2026</time></p>
+                        </div>
+                        <p class="amount amount--expense">-250 грн</p>
+                    </article>
+                    <article class="card">
+                        <img src="assets/income.jpg" alt="Категорія Дохід. Зображення руки з грошима" class="card_icon">
+                        <div class="card-info">
+                            <h3>Зарплата</h3>
+                            <span class="category-badge category-badge--income">Дохід</span>
+                            <p class="date">Дата: <time datetime="2026-08-27">27 серпня 2026</time></p>
+                        </div>
+                        <p class="amount amount--income">+15000 грн</p>
+                    </article>
+                </div>
             </section>
         </main>
-        
-        <aside>
-            <h2>Підсумковий баланс</h2>
-            <p>Загальний баланс: 14350 грн</p>
-        </aside>
     </div>
 
     <footer>
