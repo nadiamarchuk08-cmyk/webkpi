@@ -229,17 +229,17 @@ form button:hover {
 /* Допоміжні кольорові теми для категорій */
 .category-badge--food {
     background-color: #ffe8cc;
-    color: #d9480f;
+    color: #a61e00;
 }
 
 .category-badge--shop {
-    background-color: #e7f5ff;
-    color: #1971c2;
+    background-color: #e1f2fd;
+    color: #1c488b;
 }
 
 .category-badge--income {
     background-color: #d3f9d8;
-    color: #2b8a3e;
+    color: #145a2d;
 }
 
 .amount {
