@@ -45,6 +45,7 @@ if (staticCard) {
 
 const listContainer = document.querySelector('#transactions-list');
 const balanceElement = document.querySelector('#balance');
+const budgetStatusElement = document.querySelector('#budget-status');
 
 function renderTransactions(data) {
     listContainer.innerHTML = '';
@@ -117,6 +118,17 @@ function renderTransactions(data) {
     //Оновлення балансу
     if (balanceElement) {
         balanceElement.textContent = `${totalBalance >= 0 ? '+' : ''}${totalBalance} грн`;
+    }
+
+    //Оновлення індикатора балансу
+    if (budgetStatusElement) {
+        if (totalBalance >= 0) {
+            budgetStatusElement.textContent = 'Бюджет у нормі';
+            budgetStatusElement.className = 'budget-status budget-status--good';
+        } else {
+            budgetStatusElement.textContent = 'Перевитрати бюджету';
+            budgetStatusElement.className = 'budget-status budget-status--warning';
+        }
     }
 }
 

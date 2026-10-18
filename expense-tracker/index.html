@@ -16,7 +16,7 @@
         <aside>
             <h2>Підсумковий баланс</h2>
             <p id="balance" class="balance-amount">0 грн</p>
-            <span class="budget-status budget-status--good">Бюджет у нормі</span>
+            <span id="budget-status" class="budget-status budget-status--good">Бюджет у нормі</span>
         </aside>
         <main>
             <section class="form">
@@ -46,7 +46,7 @@
 
             <section class="transactions">
                 <h2>Операції</h2>
-                <div id="transactions-list" class="cards">
+                <ul id="transactions-list" class="cards">
                     <article class="card">
                         <img src="assets/food.png" alt="Категорія Їжа. Зображення столового приладдя" class="card_icon">
                         <div class="card-info">
@@ -74,7 +74,7 @@
                         </div>
                         <p class="amount amount--income">+15000 грн</p>
                     </article>
-                </div>
+                </ul>
             </section>
         </main>
     </div>
