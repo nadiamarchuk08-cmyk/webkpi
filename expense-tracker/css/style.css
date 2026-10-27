@@ -171,6 +171,9 @@ form button:hover {
 .cards {
     display: flex;
     flex-direction: column;
+    list-style: none; /* <--- ДОДАТИ ЦЕ: прибирає маркери-крапки */
+    padding-left: 0;
+    margin: 0;
 }
 
 .card {
@@ -240,6 +243,16 @@ form button:hover {
 .category-badge--income {
     background-color: #d3f9d8;
     color: #145a2d;
+}
+
+.category-badge--transport {
+    background-color: #f6d3f9;
+    color: #58145a;
+}
+
+.category-badge--other {
+    background-color: #e9ecef;
+    color: #495057;
 }
 
 .amount {

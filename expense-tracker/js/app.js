@@ -176,3 +176,91 @@ if (summary.totalIncome > 0) {
     const expensePercentage = toPercent(summary.totalExpense, summary.totalIncome);
     console.log(`Частка витрат від загального доходу: ${expensePercentage}%`);
 }
+
+//Створення та збереження нових записі вчерез форму. Практикум 8
+const form          = document.querySelector('#transaction-form');
+const titleInput    = document.querySelector('#title');
+const amountInput   = document.querySelector('#amount');
+const typeSelect    = document.querySelector('#type');
+const categoryInput = document.querySelector('#category');
+
+// Довідник категорій
+const CATEGORY_META = {
+    'Їжа':       { badge: 'category-badge--food',      icon: 'assets/food.png',      alt: 'Категорія "їжа"' },
+    'Транспорт': { badge: 'category-badge--transport', icon: 'assets/transport.png', alt: 'Категорія "Транспорт"' },
+    'Покупки':   { badge: 'category-badge--shop',      icon: 'assets/shop.png',      alt: 'Категорія "Покупки"' },
+    'Дохід':     { badge: 'category-badge--income',    icon: 'assets/income.jpg',    alt: 'Категорія "Дохід"' },
+    'Інше':      { badge: 'category-badge--other',     icon: 'assets/expense.png',   alt: 'Категорія "Інше"' }
+};
+
+//Валідація полів
+titleInput.addEventListener('input', () => {
+    titleInput.setCustomValidity('');
+});
+titleInput.addEventListener('invalid', () => {
+    if (titleInput.value.trim() === '') {
+        titleInput.setCustomValidity('Будь ласка, введіть назву операції');
+    }
+});
+
+amountInput.addEventListener('input', () => {
+    if (amountInput.value === '') {
+        amountInput.setCustomValidity('');
+    } else if (Number(amountInput.value) <= 0) {
+        amountInput.setCustomValidity('Сума має бути більшою за нуль');
+    } else {
+        amountInput.setCustomValidity('');
+    }
+});
+amountInput.addEventListener('invalid', () => {
+    if (amountInput.value === '') {
+        amountInput.setCustomValidity('Будь ласка, введіть суму');
+    }
+});
+
+typeSelect.addEventListener('change', () => {
+    if (typeSelect.value === 'дохід') {
+        categoryInput.value = 'Дохід';
+    }
+});
+
+//Обробник нового заису
+form.addEventListener('submit', (event) => {
+    event.preventDefault();
+
+    //Зчитання значень
+    const title    = titleInput.value.trim();
+    const amount   = Number(amountInput.value);
+    const type     = typeSelect.value;
+    const category = categoryInput.value;
+
+    const meta = CATEGORY_META[category];
+    if (!meta) return;
+
+    //Створення об'єкту
+    const now = new Date();
+    const monthsUa = [
+        'січня','лютого','березня','квітня','травня','червня',
+        'липня','серпня','вересня','жовтня','листопада','грудня'
+    ];
+    
+    const newTransaction = {
+        amount,
+        type,
+        category,
+        title,
+        date:      `${now.getDate()} ${monthsUa[now.getMonth()]} ${now.getFullYear()}`,
+        datetime:  now.toISOString().split('T')[0],
+        badgeClass: meta.badge,
+        icon:      meta.icon,
+        alt:       meta.alt
+    };
+
+    transactions.push(newTransaction);
+
+    //Рендер та оновлення балансу
+    renderTransactions(transactions);
+    calculateBalance(transactions);
+
+    form.reset();
+});
