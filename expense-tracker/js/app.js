@@ -90,6 +90,15 @@ function renderTransactions(data) {
 
         cardInfo.append(title, categoryBadge, typeText, dateParam);
 
+        // Виводимо коментар, якщо він є (для API-даних)
+        if (item.comment) {
+            const commentParam = document.createElement('p');
+            commentParam.classList.add('date'); // Використовуємо існуючий сірий стиль
+            commentParam.style.fontStyle = 'italic'; // Трохи виділимо курсивом
+            commentParam.textContent = `${item.comment}`;
+            cardInfo.append(commentParam);
+        }
+
         //сума
         const amountText = document.createElement('p');
         amountText.classList.add('amount');
@@ -264,3 +273,119 @@ form.addEventListener('submit', (event) => {
 
     form.reset();
 });
+
+//Практикум 9
+//Виносимо URL в константи
+const COMMENTS_API_URL = 'https://jsonplaceholder.typicode.com/comments?postId=2';
+const CURRENCY_API_URL = 'https://api.frankfurter.app/latest';
+
+//Знаходимо елементи для стану завантаження та помилок
+const loadingIndicator = document.querySelector('#loading-indicator');
+const errorMessageEl   = document.querySelector('#error-message');
+const refreshBtn       = document.querySelector('#refresh-btn');
+
+// Допоміжні функції для керування станом UI
+function showLoading(isLoading) {
+    if (isLoading) {
+        loadingIndicator.style.display = 'block';
+        refreshBtn.disabled = true;
+        refreshBtn.textContent = 'Завантаження...';
+    } else {
+        loadingIndicator.style.display = 'none';
+        refreshBtn.disabled = false;
+        refreshBtn.textContent = 'Оновити дані з API';
+    }
+}
+
+function showError(message) {
+    errorMessageEl.textContent = message;
+    errorMessageEl.style.display = 'block';
+}
+
+function hideError() {
+    errorMessageEl.style.display = 'none';
+    errorMessageEl.textContent = '';
+}
+
+//Бонусна функція: Конвертація валюти через Frankfurter API
+async function convertCurrency(amount, from = 'EUR', to = 'USD') {
+    try {
+        const url = `${CURRENCY_API_URL}?amount=${amount}&from=${from}&to=${to}`;
+        const response = await fetch(url);
+        if (!response.ok) throw new Error('Помилка API валют');
+        const data = await response.json();
+        return data.rates[to]; //Повертає сконвертовану суму
+    } catch (err) {
+        console.error('Не вдалося сконвертувати валюту:', err);
+        return null;
+    }
+}
+
+//Головна асинхронна функція завантаження даних
+async function loadDataFromAPI() {
+    hideError();       //Ховаємо старі помилки
+    showLoading(true); //Вмикаємо спінер і блокуємо кнопку
+
+    try {
+        //Виконуємо fetch
+        const response = await fetch(COMMENTS_API_URL);
+        
+        //Перевірка статусу
+        if (!response.ok) {
+            throw new Error(`Сервер відповів кодом ${response.status}`);
+        }
+
+        //Розбір JSON в потрібний формат даних
+        const comments = await response.json();
+        console.log('Отримані дані з API:', comments);
+
+        //Мапимо дані API на формат транзакції
+        const apiTransactions = comments.map((item, index) => {
+            const randomAmount = (index + 1) * 50; // Штучна сума (50, 100, 150...)
+            
+            // Визначаємо тип випадково для демонстрації (кожен 3-й - дохід)
+            const isIncome = index % 3 === 0; 
+            const type = isIncome ? 'дохід' : 'витрата';
+            const category = isIncome ? 'Дохід' : 'Інше';
+            
+            // Беремо стилі з словника
+            const meta = CATEGORY_META[category] || { badge: 'category-badge--other', icon: 'assets/expense.png', alt: 'Інше' };
+
+            return {
+                amount: randomAmount,
+                type: type,
+                category: category,
+                title: item.name.substring(0, 30) + '...', 
+                date: new Date().toLocaleDateString('uk-UA'),
+                datetime: new Date().toISOString().split('T')[0],
+                badgeClass: meta.badge,
+                icon: meta.icon,
+                alt: meta.alt,
+                comment: item.body
+            };
+        });
+
+        // Бонус: Конвертуємо суму першої транзакції
+        if (apiTransactions.length > 0) {
+            const firstAmount = apiTransactions[0].amount;
+            const converted = await convertCurrency(firstAmount, 'EUR', 'USD');
+            if (converted !== null) {
+                console.log(`[БОНУС] ${firstAmount} EUR = ${converted.toFixed(2)} USD`);
+            }
+        }
+
+        //Виводимо дані в DOM
+        renderTransactions(apiTransactions);
+
+    } catch (error) {
+        //Обробляємо помилку
+        console.error('Деталі помилки:', error);
+        showError('Не вдалося завантажити дані. Перевірте з’єднання з інтернетом та спробуйте пізніше.');
+    } finally {
+        //Ховаємо індикатор завантаження
+        showLoading(false);
+    }
+}
+
+//Прив'язуємо кнопку "Оновити" до функції
+refreshBtn.addEventListener('click', loadDataFromAPI);

@@ -60,6 +60,18 @@
 
             <section class="transactions">
                 <h2>Операції</h2>
+                
+                <div id="api-controls">
+                    <button type="button" id="refresh-btn">Оновити дані з API</button>
+                </div>
+
+                <div id="error-message" role="alert">
+                </div>
+
+                <div id="loading-indicator" role="status" aria-live="polite">
+                    Завантаження даних... ⏳
+                </div>
+
                 <ul id="transactions-list" class="cards">
                     <li class="card">
                         <img src="assets/food.png" alt="Категорія Їжа. Зображення столового приладдя" class="card_icon">

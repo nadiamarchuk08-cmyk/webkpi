@@ -193,6 +193,8 @@ form button:hover {
     align-items: flex-start;
     gap: 0.2rem;
     flex-grow: 1;
+    min-width: 0;          /* Дозволяє контейнеру стискатися, якщо тексту забагато */
+    word-wrap: break-word;
 }
 
 .card:last-child {
@@ -259,6 +261,8 @@ form button:hover {
     font-size: 1.1rem;
     font-weight: 700;
     margin: 0;
+    flex-shrink: 0;
+    white-space: nowrap;
 }
 
 .amount--income {
@@ -267,6 +271,48 @@ form button:hover {
 
 .amount--expense {
     color: #c92a2a; /*обрано контрастніший відтінок*/
+}
+
+.card .comment-text {
+    font-size: 0.8rem;
+    color: #6c757d;
+    margin: 0;
+    line-height: 1.2;
+    /* Обмежуємо текст трьома крапками, якщо він задовгий */
+    display: -webkit-box;
+    line-clamp: 3;          /* Стандартна властивість для валідатора */
+    -webkit-line-clamp: 3;
+}
+
+#api-controls {
+    margin-bottom: 15px;
+}
+
+#error-message {
+    display: none; /* Керується через JS */
+    color: #c92a2a;
+    background: #ffe3e3;
+    padding: 10px;
+    border-radius: 4px;
+    margin-bottom: 10px;
+    border: 1px solid #ffc9c9;
+}
+
+#loading-indicator {
+    display: none; /* Керується через JS */
+    color: #2d6a4f;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+#refresh-btn {
+    background-color: #2d6a4f;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
 }
 
 @media (min-width: 600px) {
