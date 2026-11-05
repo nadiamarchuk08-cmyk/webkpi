@@ -22,6 +22,18 @@
                 :class="totalBalance >= 0 ? 'budget-status--good' : 'budget-status--warning'">
                 {{ totalBalance >= 0 ? 'Бюджет у нормі' : 'Перевитрати бюджету' }}
             </span>
+            <div class="category-totals">
+                <h3>Витрати за категоріями:</h3>
+                <ul>
+                    <!-- Виводимо об'єкт через v-for -->
+                    <li v-for="(sum, cat) in categoryTotals" :key="cat">
+                        {{ cat }}: <b>{{ sum }} грн</b>
+                    </li>
+                    <li v-if="Object.keys(categoryTotals).length === 0" class="empty-category">
+                        Немає даних
+                    </li>
+                </ul>
+            </div>
         </aside>
         <main>
             <section class="form">

@@ -54,11 +54,9 @@ const app = Vue.createApp({
     },
     data() {
         return {
-            transactions: [
-                { id: 1, amount: 400, type: 'витрата', category: 'Їжа', title: 'Кафе', date: '10 вересня 2026', badgeClass: 'category-badge--food', icon: 'assets/food.png' },
-                { id: 2, amount: 250, type: 'витрата', category: 'Покупки', title: 'Супермаркет', date: '11 вересня 2026', badgeClass: 'category-badge--shop', icon: 'assets/shop.png' },
-                { id: 3, amount: 15000, type: 'дохід', category: 'Дохід', title: 'Зарплата', date: '27 серпня 2026', badgeClass: 'category-badge--income', icon: 'assets/income.jpg' }
-            ]
+            // Починаємо з порожнього масиву. 
+            // Дані завантажаться з IndexedDB у mounted()
+            transactions: [] 
         };
     },
     // Похідне значення
@@ -67,13 +65,46 @@ const app = Vue.createApp({
             return this.transactions.reduce((total, item) => {
                 return item.type === 'дохід' ? total + item.amount : total - item.amount;
             }, 0);
+        },
+        //Підрахунок суми за категоріями
+        categoryTotals() {
+            const totals = {};
+            this.transactions.forEach(item => {
+                if (item.type === 'витрата') {
+                    if (!totals[item.category]) totals[item.category] = 0;
+                    totals[item.category] += item.amount;
+                }
+            });
+            return totals;
         }
     },
     methods: {
         //6. Обробник події від дочірнього компонента
-        removeTransaction(id) {
-            this.transactions = this.transactions.filter(item => item.id !== id);
+        //додано видалення з IDB та localStorage
+        async removeTransaction(id) {
+            try {
+                await deleteTransaction(id); // Видаляємо з IndexedDB
+                this.transactions = this.transactions.filter(item => item.id !== id); // Оновлюємо Vue
+                saveToLocalStorage(this.transactions); // Синхронізуємо localStorage
+            } catch (error) {
+                console.error('Помилка видалення:', error);
+            }
+        },
+        //Завантаження при старті
+        async loadTransactions() {
+            try {
+                await migrateFromLocalStorage();
+                this.transactions = await getAllTransactions(); // Беремо з IDB
+            } catch (error) {
+                console.error('Помилка IndexedDB, використовуємо localStorage:', error);
+                this.transactions = loadFromLocalStorage(); // Запасний варіант
+                showError('Помилка бази даних. Дані завантажено з тимчасового сховища.');
+            }
         }
+    },
+
+    mounted() {
+        this.loadTransactions();
     }
 });
 
@@ -84,6 +115,100 @@ const vm = app.mount('#app');
    calculateBalance() ВИДАЛЕНО, оскільки тепер 
    цим займається реактивний Vue.
    ============================================================ */
+
+
+//ПРАКТИКУМ 11. Робота з IndexedDB та localStorage
+
+const DB_NAME = 'ExpenseTrackerDB';
+const DB_VERSION = 1;
+const STORE_NAME = 'transactions';
+
+// 2. Функції для localStorage
+function saveToLocalStorage(items) {
+    localStorage.setItem('transactions', JSON.stringify(items));
+}
+
+function loadFromLocalStorage() {
+    try {
+        const raw = localStorage.getItem('transactions');
+        return raw ? JSON.parse(raw) : [];
+    } catch (error) {
+        console.error('Пошкоджені дані в localStorage:', error);
+        return [];
+    }
+}
+
+// 6. Відкриття бази IndexedDB
+function openDB() {
+    return new Promise((resolve, reject) => {
+        const request = indexedDB.open(DB_NAME, DB_VERSION);
+        
+        request.onupgradeneeded = (event) => {
+            const db = event.target.result;
+            if (!db.objectStoreNames.contains(STORE_NAME)) {
+                // 5. Створюємо сховище з autoIncrement: true
+                db.createObjectStore(STORE_NAME, { keyPath: 'id', autoIncrement: true });
+            }
+        };
+        
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error); 
+    });
+}
+
+// 7. CRUD-функції для IndexedDB
+async function addTransaction(item) {
+    const db = await openDB();
+    return new Promise((resolve, reject) => {
+        const tx = db.transaction(STORE_NAME, 'readwrite');
+        const store = tx.objectStore(STORE_NAME);
+        
+        // Видаляємо id, якщо він є
+        const itemWithoutId = { ...item };
+        delete itemWithoutId.id;
+
+        const request = store.put(itemWithoutId);
+        request.onsuccess = () => resolve(request.result); // повертає згенерований ID
+        tx.onerror = () => reject(tx.error);
+    });
+}
+
+async function getAllTransactions() {
+    const db = await openDB();
+    return new Promise((resolve, reject) => {
+        const tx = db.transaction(STORE_NAME, 'readonly');
+        const store = tx.objectStore(STORE_NAME);
+        const request = store.getAll();
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error);
+    });
+}
+
+async function deleteTransaction(id) {
+    const db = await openDB();
+    return new Promise((resolve, reject) => {
+        const tx = db.transaction(STORE_NAME, 'readwrite');
+        const store = tx.objectStore(STORE_NAME);
+        store.delete(id);
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => reject(tx.error);
+    });
+}
+
+// 8. Міграція з localStorage
+async function migrateFromLocalStorage() {
+    const migrated = localStorage.getItem('migratedToIDB');
+    if (migrated) return; 
+
+    const localData = loadFromLocalStorage();
+    if (localData.length > 0) {
+        console.log('Міграція даних з localStorage в IndexedDB...');
+        for (const item of localData) {
+            await addTransaction(item);
+        }
+    }
+    localStorage.setItem('migratedToIDB', 'true');
+}
 
 
 //ПРАКТИКУМ 8. Обробка форми
@@ -122,7 +247,8 @@ typeSelect.addEventListener('change', () => {
 });
 
 // Обробник додавання
-form.addEventListener('submit', (event) => {
+// тепер функція async, зберігає в IDB
+form.addEventListener('submit', async (event) => {
     event.preventDefault();
 
     const title    = titleInput.value.trim();
@@ -137,7 +263,7 @@ form.addEventListener('submit', (event) => {
     const monthsUa = ['січня','лютого','березня','квітня','травня','червня','липня','серпня','вересня','жовтня','листопада','грудня'];
     
     const newTransaction = {
-        id: Date.now(), 
+        // id IndexedDB згенерує сама
         amount, type, category, title,
         date: `${now.getDate()} ${monthsUa[now.getMonth()]} ${now.getFullYear()}`,
         badgeClass: meta.badge,
@@ -145,13 +271,19 @@ form.addEventListener('submit', (event) => {
         alt: meta.alt
     };
 
-    // Додаємо прямо у Vue!
-    vm.transactions.unshift(newTransaction); 
+    try {
+        const newId = await addTransaction(newTransaction); // Зберігаємо в IDB
+        vm.transactions.unshift({ id: newId, ...newTransaction }); // Додаємо у Vue
+        saveToLocalStorage(vm.transactions); // Зберігаємо в LocalStorage
 
-    // Очищення
-    form.reset();
-    titleInput.setCustomValidity('');
-    amountInput.setCustomValidity('');
+        // Очищення
+        form.reset();
+        titleInput.setCustomValidity('');
+        amountInput.setCustomValidity('');
+    } catch (error) {
+        console.error("Помилка збереження:", error);
+        alert("Не вдалося зберегти транзакцію.");
+    }
 });
 
 //ПРАКТИКУМ 9. Fetch API
@@ -213,7 +345,6 @@ async function loadDataFromAPI() {
             const meta = CATEGORY_META[category] || { badge: 'category-badge--other', icon: 'assets/expense.png' };
 
             return {
-                id: item.id + 1000,
                 amount: randomAmount,
                 type: type,
                 category: category,
@@ -230,7 +361,13 @@ async function loadDataFromAPI() {
             if (converted !== null) console.log(`[БОНУС] ${apiTransactions[0].amount} EUR = ${converted.toFixed(2)} USD`);
         }
         
-        vm.transactions = apiTransactions;
+        //зберігаємо кожну транзакцію з API в IDB
+        for (const tx of apiTransactions) {
+            const newId = await addTransaction(tx);
+            vm.transactions.push({ id: newId, ...tx });
+        }
+        
+        saveToLocalStorage(vm.transactions); // Синхронізуємо LocalStorage
 
     } catch (error) {
         console.error(error);
