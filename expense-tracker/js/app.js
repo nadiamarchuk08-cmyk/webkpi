@@ -100,6 +100,11 @@ const app = Vue.createApp({
                 this.transactions = loadFromLocalStorage(); // Запасний варіант
                 showError('Помилка бази даних. Дані завантажено з тимчасового сховища.');
             }
+        },
+
+        getCategoryBadgeClass(category) {
+            const meta = CATEGORY_META[category];
+            return meta ? meta.badge : 'category-badge--other';
         }
     },
 
@@ -109,6 +114,104 @@ const app = Vue.createApp({
 });
 
 const vm = app.mount('#app'); 
+
+
+// ПРАКТИКУМ 12. Canvas API та requestAnimationFrame
+
+// 3. Отримуємо canvas та його 2D контекст
+const canvas = document.getElementById('expense-chart');
+const ctx = canvas.getContext('2d');
+
+// Кольори для категорій
+const CHART_COLORS = {
+    'Їжа':       '#ff922b',
+    'Транспорт': '#be4bdb',
+    'Покупки':   '#339af0',
+    'Інше':      '#868e96',
+    'Дохід':     '#40c057'
+};
+
+let animationFrameId = null;
+
+// 4 та 5. Функція малювання діаграми з анімацією
+function drawPieChart(progress = 1) {
+    // Очищаємо попередній кадр
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    const data = vm.categoryTotals; // Беремо дані з Vue (Практикум 11)
+    const categories = Object.keys(data);
+    
+    // Перевірка, чи є дані
+    const total = Object.values(data).reduce((sum, val) => sum + val, 0);
+    if (total === 0) {
+        ctx.fillStyle = '#adb5bd';
+        ctx.font = '14px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('Немає даних для діаграми', canvas.width / 2, canvas.height / 2);
+        return;
+    }
+
+    const centerX = canvas.width / 2;
+    const centerY = canvas.height / 2;
+    const radius = Math.min(centerX, centerY) - 20;
+
+    let startAngle = -Math.PI / 2; //Починаємо малювати з верхньої точки
+
+    categories.forEach(category => {
+        const amount = data[category];
+        const sliceAngle = (amount / total) * 2 * Math.PI;
+        
+        //множимо кут на progress (від 0 до 1)
+        const currentSliceAngle = sliceAngle * progress;
+
+        // Малюємо сектор
+        ctx.beginPath();
+        ctx.moveTo(centerX, centerY);
+        ctx.arc(centerX, centerY, radius, startAngle, startAngle + currentSliceAngle);
+        ctx.closePath();
+
+        // Зафарбовуємо
+        ctx.fillStyle = CHART_COLORS[category] || '#ced4da';
+        ctx.fill();
+
+        //біла рамка між секторами
+        ctx.strokeStyle = '#fff';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        startAngle += currentSliceAngle;
+    });
+}
+
+// Функція запуску анімації
+function animateChart() {
+    // Якщо попередня анімація ще йде, скасовуємо її
+    if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+    }
+
+    let startTime = null;
+    const duration = 600; // Тривалість анімації в мілісекундах (0.6 сек)
+
+    function step(timestamp) {
+        if (!startTime) startTime = timestamp;
+        const progress = Math.min((timestamp - startTime) / duration, 1);
+
+        drawPieChart(progress); // Малюємо кадр
+
+        if (progress < 1) {
+            animationFrameId = requestAnimationFrame(step); // Наступний кадр
+        }
+    }
+    animationFrameId = requestAnimationFrame(step);
+}
+
+// 6. Прив'язка до зміни даних
+vm.$watch('transactions', () => {
+    animateChart();
+}, { deep: true });
+
+drawPieChart(1); 
 
 /* ============================================================: 
    Функцію renderTransactions(), staticCard.remove() та 
