@@ -11,6 +11,11 @@
 <body>
     <header>
         <h1>Трекер витрат</h1>
+        <!-- ДОДАНО ДЛЯ ПРАКТИКУМУ 13: Навігаційне меню -->
+        <nav class="main-nav">
+            <a href="#/">Головна</a>
+            <a href="#/stats">Статистика</a>
+        </nav>
     </header>
 
     <div id="app" class="layout-container">
@@ -22,94 +27,129 @@
                 :class="totalBalance >= 0 ? 'budget-status--good' : 'budget-status--warning'">
                 {{ totalBalance >= 0 ? 'Бюджет у нормі' : 'Перевитрати бюджету' }}
             </span>
-            <div class="category-totals">
-                <h3>Витрати за категоріями:</h3>
-                <ul class="category-legend">
-                    <li v-for="(sum, cat) in categoryTotals" :key="cat">
-                        <span class="category-badge" :class="getCategoryBadgeClass(cat)">{{ cat }}</span>
-                        <span class="category-sum">{{ sum }} грн</span>
-                    </li>
-                    <li v-if="Object.keys(categoryTotals).length === 0" class="empty-category">
-                        Немає даних
-                    </li>
-                </ul>
-            </div>
-            <div class="chart-container">
-                <h3>Діаграма витрат</h3>
-                <canvas id="expense-chart" width="250" height="250"></canvas>
-            </div>
         </aside>
+
         <main>
-            <section class="form">
-                <h2>Додати операцію</h2>
-                <form action="#" class="transaction-form" id="transaction-form">
-                    <div class="form-group">
-                        <label for="amount">Сума (грн):</label>
-                        <input type="number" id="amount" name="amount"
-                            min="0.01" step="0.01" required>
+            <div v-if="currentRoute === '/'">
+                <section class="form">
+                    <h2>Додати операцію</h2>
+                    <form action="#" class="transaction-form" id="transaction-form">
+                        <div class="form-group">
+                            <label for="amount">Сума (грн):</label>
+                            <input type="number" id="amount" name="amount" min="0.01" step="0.01" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="title">Назва операції:</label>
+                            <input type="text" id="title" name="title" minlength="2" maxlength="40" placeholder="Напр. Кафе, Зарплата" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="type">Тип операції:</label>
+                            <select id="type" name="type" required>
+                                <option value="дохід" selected>Дохід</option>
+                                <option value="витрата">Витрата</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="category">Категорія:</label>
+                            <select id="category" name="category" required>
+                                <option value="Їжа" selected>Їжа</option>
+                                <option value="Транспорт">Транспорт</option>
+                                <option value="Покупки">Покупки</option>
+                                <option value="Дохід">Дохід</option>
+                                <option value="Інше">Інше</option>
+                            </select>
+                        </div>
+                        <button type="submit">Додати</button>
+                    </form>
+                </section>
+
+                <section class="transactions">
+                    <h2>Останні операції</h2>
+                    <div id="api-controls">
+                        <button type="button" id="refresh-btn">Оновити дані з API</button>
                     </div>
+                    <div id="error-message" role="alert"></div>
+                    <div id="loading-indicator" role="status" aria-live="polite">Завантаження даних...</div>
 
-                    <div class="form-group">
-                        <label for="title">Назва операції:</label>
-                        <input type="text" id="title" name="title"
-                            minlength="2" maxlength="40"
-                            placeholder="Напр. Кафе, Зарплата"
-                            required>
+                    <ul id="transactions-list" class="cards">
+                        <expense-row 
+                            v-for="item in transactions" 
+                            :key="item.id"
+                            :id="item.id"
+                            :title="item.title"
+                            :amount="item.amount"
+                            :type="item.type"
+                            :category="item.category"
+                            :date="item.date"
+                            :badge-class="item.badgeClass"
+                            :icon="item.icon"
+                            :comment="item.comment"
+                            @delete="removeTransaction"
+                            @view-category="navigateToCategory" 
+                        ></expense-row>
+                    </ul>
+                </section>
+            </div>
+
+            <div v-if="currentRoute === '/category/:category'">
+                <section class="transactions">
+                    <h2>Операції за категорією: {{ currentCategory }}</h2>
+                    <button @click="navigate('/')" class="back-btn">← Назад на головну</button>
+                    
+                    <ul class="cards" style="margin-top: 15px;">
+                        <expense-row 
+                            v-for="item in filteredTransactions" 
+                            :key="item.id"
+                            :id="item.id"
+                            :title="item.title"
+                            :amount="item.amount"
+                            :type="item.type"
+                            :category="item.category"
+                            :date="item.date"
+                            :badge-class="item.badgeClass"
+                            :icon="item.icon"
+                            :comment="item.comment"
+                            @delete="removeTransaction"
+                        ></expense-row>
+                        <li v-if="filteredTransactions.length === 0" style="text-align:center; color:#666; padding: 20px;">
+                            У цій категорії немає транзакцій.
+                        </li>
+                    </ul>
+                </section>
+            </div>
+
+            <div v-if="currentRoute === '/stats'">
+                <section>
+                    <h2>Статистика за категоріями</h2>
+                    <div class="stats-content">
+                        <div class="category-totals">
+                            <h3>Розподіл витрат:</h3>
+                            <ul class="category-legend">
+                                <li v-for="(sum, cat) in categoryTotals" :key="cat">
+                                    <span class="category-badge" :class="getCategoryBadgeClass(cat)">{{ cat }}</span>
+                                    <span class="category-sum">{{ sum }} грн</span>
+                                </li>
+                                <li v-if="Object.keys(categoryTotals).length === 0" class="empty-category">Немає даних</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="chart-container" style="border: none; padding: 0; margin-top: 0;">
+                            <h3>Діаграма витрат</h3>
+                            <canvas id="expense-chart" width="250" height="250"></canvas>
+                        </div>
                     </div>
+                </section>
+            </div>
 
-                    <div class="form-group">
-                        <label for="type">Тип операції:</label>
-                        <select id="type" name="type" required>
-                            <option value="дохід">Дохід</option>
-                            <option value="витрата">Витрата</option>
-                        </select>
-                    </div>
+            <div v-if="currentRoute === '404'">
+                <section>
+                    <h2>404 — Сторінку не знайдено</h2>
+                    <p>На жаль, такої сторінки не існує.</p>
+                    <button @click="navigate('/')" class="back-btn">← Повернутися на головну</button>
+                </section>
+            </div>
 
-                    <div class="form-group">
-                        <label for="category">Категорія:</label>
-                        <select id="category" name="category" required>
-                            <option value="Їжа">Їжа</option>
-                            <option value="Транспорт">Транспорт</option>
-                            <option value="Покупки">Покупки</option>
-                            <option value="Дохід">Дохід</option>
-                            <option value="Інше">Інше</option>
-                        </select>
-                    </div>
-                    <button type="submit">Додати</button>
-                </form>
-            </section>
-
-            <section class="transactions">
-                <h2>Операції</h2>
-                
-                <div id="api-controls">
-                    <button type="button" id="refresh-btn">Оновити дані з API</button>
-                </div>
-
-                <div id="error-message" role="alert">
-                </div>
-
-                <div id="loading-indicator" role="status" aria-live="polite">
-                    Завантаження даних... ⏳
-                </div>
-
-                <ul id="transactions-list" class="cards">
-                    <expense-row 
-                        v-for="item in transactions" 
-                        :key="item.id"
-                        :id="item.id"
-                        :title="item.title"
-                        :amount="item.amount"
-                        :type="item.type"
-                        :category="item.category"
-                        :date="item.date"
-                        :badge-class="item.badgeClass"
-                        :icon="item.icon"
-                        :comment="item.comment"
-                        @delete="removeTransaction"
-                    ></expense-row>
-                </ul>
-            </section>
         </main>
     </div>
 
